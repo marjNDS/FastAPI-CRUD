@@ -1,13 +1,12 @@
 from typing import Generator, Optional
 
 from fastapi import Depends, HTTPException, status
-
 from jose import jwt, JWTError
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from pydantic import Session, BaseModel
+from pydantic import BaseModel
 
 from core.database import Session
 from core.auth import oauth2_schema
@@ -20,6 +19,8 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 # Função assíncrona para obter uma sessão de banco de dados
+
+
 async def get_session() -> Generator:
     session: AsyncSession = Session()  # Cria uma nova sessão assíncrona
     try:
@@ -28,6 +29,8 @@ async def get_session() -> Generator:
         await session.close()  # Garante que a sessão será fechada após o uso
 
 # Função assíncrona para obter o usuário atual autenticado com base no token JWT
+
+
 async def get_current_user(db: Session = Depends(get_session), token: str = Depends(oauth2_schema)) -> UsuarioModel:
     # Define uma exceção HTTP 401 para ser usada em caso de falha na autenticação
     credential_exception: HTTPException = HTTPException(
@@ -62,7 +65,8 @@ async def get_current_user(db: Session = Depends(get_session), token: str = Depe
     # Cria uma sessão assíncrona com o banco de dados
     async with db as session:
         # Define a consulta para selecionar o usuário com o ID correspondente ao nome de usuário do token
-        query = select(UsuarioModel).filter(UsuarioModel.id == int(token_data.username))
+        query = select(UsuarioModel).filter(
+            UsuarioModel.id == int(token_data.username))
         # Executa a consulta
         result = await session.execute(query)
         # Obtém o usuário único ou nenhum

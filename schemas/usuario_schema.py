@@ -16,6 +16,8 @@ class UsuarioSchemaBase(BaseModel):
         orm_mode = True
 
 # para criar uma conta
+
+
 class UsuarioSchemaCreate(UsuarioSchemaBase):
     senha: str
 
@@ -24,10 +26,10 @@ class UsuarioSchemaArtigos(UsuarioSchemaBase):
     artigos: Optional[List[ArtigoSchema]]
 
 
-#para atualizar dados no bd
+# para atualizar dados no bd
 class UsuarioSchemaUp(UsuarioSchemaBase):
     nome: Optional[str]
     sobrenome: Optional[str]
     email: Optional[str]
     senha: Optional[str]
-    is_admin: Optional[str]
+    is_admin: Optional[bool]

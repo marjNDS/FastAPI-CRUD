@@ -67,35 +67,36 @@ async def put_artigo(artigo_id: int,
         result = await session.execute(query)
         artigo_up: ArtigoModel = result.scalars().unique().one_or_none()
 
-        if artigo_up:
-            if artigo.titulo:
-                artigo_up.titulo = artigo.titulo
-            if artigo.descricao:
-                artigo_up.descricao = artigo.descricao
-            if artigo.url_fonte:
-                artigo_up.url_fonte = artigo.url_fonte
-            if usuario_logado.id != artigo_up.usuario_id:
-                artigo_up.id = usuario_logado.id
-
-            return artigo_up
-        else:
+        if not artigo_up:
             raise HTTPException(detail="Artigo não encontrado",
                                 status_code=status.HTTP_404_NOT_FOUND)
+
+        if artigo.titulo:
+            artigo_up.titulo = artigo.titulo
+        if artigo.descricao:
+            artigo_up.descricao = artigo.descricao
+        if artigo.url_fonte:
+            artigo_up.url_fonte = artigo.url_fonte
+        if usuario_logado.id != artigo_up.usuario_id:
+            artigo_up.id = usuario_logado.id
+
+        await session.commit()
+        return artigo_up
 
 
 # delete artigo by id. Somente o usuário que fez o artigo tem autorização de alterar
-@router.delete("/{artigo_id}", response_model=ArtigoSchema, status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{artigo_id}")
 async def delete_artigo(artigo_id: int, db: AsyncSession = Depends(get_session), usuario_logado: UsuarioModel = Depends(get_current_user)):
     async with db as session:
         query = select(ArtigoModel).filter(ArtigoModel.id == artigo_id).filter(
-            ArtigoModel.usuario_id == usuario_logado)
+            ArtigoModel.usuario_id == usuario_logado.id)
         result = await session.execute(query)
         artigo_del: ArtigoModel = result.scalars().unique().one_or_none()
 
-        if artigo_del:
-            await session.delete(artigo_del)
-            await session.commit()
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
-        else:
+        if not artigo_del:
             raise HTTPException(detail="Artigo não encontrado",
                                 status_code=status.HTTP_404_NOT_FOUND)
+
+        await session.delete(artigo_del)
+        await session.commit()
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
